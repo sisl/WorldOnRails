@@ -9,13 +9,18 @@ import carla
 import random
 import string
 
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from torch.distributions.categorical import Categorical
 
-from leaderboard.autoagents.autonomous_agent import AutonomousAgent, Track
+from srunner.autoagents.autonomous_agent import AutonomousAgent
 from utils import visualize_obs
 
 from rails.models import EgoModel, CameraModel
 from autoagents.waypointer import Waypointer
+
+from pdb import set_trace as breakpoint # DEBUG. TODO!
 
 def get_entry_point():
     return 'ImageAgent'
@@ -31,7 +36,7 @@ class ImageAgent(AutonomousAgent):
         Setup the agent parameters
         """
 
-        self.track = Track.SENSORS
+        self.track = None
         self.num_frames = 0
 
         with open(path_to_conf_file, 'r') as f:
@@ -43,7 +48,8 @@ class ImageAgent(AutonomousAgent):
         self.device = torch.device('cuda')
 
         self.image_model = CameraModel(config).to(self.device)
-        self.image_model.load_state_dict(torch.load(self.main_model_dir))
+        main_model_file = os.path.join(os.path.dirname(__file__), "..", self.main_model_dir)
+        self.image_model.load_state_dict(torch.load(main_model_file))
         self.image_model.eval()
 
         self.vizs = []
@@ -88,16 +94,17 @@ class ImageAgent(AutonomousAgent):
             {'type': 'sensor.speedometer', 'id': 'EGO'},
             {'type': 'sensor.other.gnss', 'x': 0., 'y': 0.0, 'z': self.camera_z, 'id': 'GPS'},
             {'type': 'sensor.stitch_camera.rgb', 'x': self.camera_x, 'y': 0, 'z': self.camera_z, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
-            'width': 160, 'height': 240, 'fov': 60, 'id': f'Wide_RGB'},
+            'width': 160, 'height': 240, 'fov': 60, 'id': f'rgb'},
             {'type': 'sensor.camera.rgb', 'x': self.camera_x, 'y': 0, 'z': self.camera_z, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
             'width': 384, 'height': 240, 'fov': 50, 'id': f'Narrow_RGB'},
+            # {'type': 'sensor.camera.rgb', 'x': 0.7, 'y': 0, 'z': 50, 'roll': 0.0, 'pitch': -90.0, 'yaw': 0.0, 'width': 384*2, 'height': 240*2, 'fov': 50, 'id': 'VIDEO_CAMERA'},
         ]
         
         return sensors
 
     def run_step(self, input_data, timestamp):
         
-        _, wide_rgb = input_data.get(f'Wide_RGB')
+        _, wide_rgb = input_data.get(f'rgb')
         _, narr_rgb = input_data.get(f'Narrow_RGB')
 
         # Crop images
