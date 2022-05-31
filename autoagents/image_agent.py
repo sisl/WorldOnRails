@@ -63,6 +63,7 @@ class ImageAgent(AutonomousAgent):
         self.throts = torch.tensor(np.linspace(0,self.max_throts,self.num_throts)).float().to(self.device)
 
         self.prev_steer = 0
+        self.lane_changed = None
         self.lane_change_counter = 0
         self.stop_counter = 0
 
