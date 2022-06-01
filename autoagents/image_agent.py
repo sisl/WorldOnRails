@@ -91,7 +91,7 @@ class ImageAgent(AutonomousAgent):
 
     def sensors(self):
         sensors = [
-            {'type': 'sensor.collision', 'id': 'COLLISION'},
+            # {'type': 'sensor.collision', 'id': 'COLLISION'}, # SISL removed: causes UE4 crashes (https://github.com/carla-simulator/carla/issues/4861)
             {'type': 'sensor.speedometer', 'id': 'EGO'},
             {'type': 'sensor.other.gnss', 'x': 0., 'y': 0.0, 'z': self.camera_z, 'id': 'GPS'},
             {'type': 'sensor.stitch_camera.rgb', 'x': self.camera_x, 'y': 0, 'z': self.camera_z, 'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0,
